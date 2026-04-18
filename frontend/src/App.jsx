@@ -20,11 +20,18 @@ export default function App() {
   async function loadRepos() {
     if (!token) return
     setLoading(true)
-    const res = await fetch(API + "/api/auth/repos?access_token=" + token)
-    const data = await res.json()
-    setRepos(data.repos)
-    setLoading(false)
-    setStep(3)
+    try {
+      const res = await fetch(API + "/api/auth/repos?access_token=" + token)
+      console.log("Repos response status:", res.status)
+      const data = await res.json()
+      console.log("Repos data:", data)
+      setRepos(data.repos)
+      setLoading(false)
+      setStep(3)
+    } catch(e) {
+      console.log("Error loading repos:", e)
+      setLoading(false)
+    }
   }
 
 async function generateDockerfile() {
