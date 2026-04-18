@@ -1,8 +1,6 @@
 import { useState } from "react"
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:8000"
-console.log("API URL:", API)
-
 
 export default function App() {
   const [token, setToken] = useState("")
@@ -10,11 +8,9 @@ export default function App() {
   const [selectedRepo, setSelectedRepo] = useState(null)
   const [dockerfile, setDockerfile] = useState(null)
   const [loading, setLoading] = useState(false)
-  const [step, setStep] = useState(1)
 
   function connectGithub() {
     window.open(API + "/api/auth/login", "_blank")
-    setStep(2)
   }
 
   async function loadRepos() {
@@ -22,36 +18,34 @@ export default function App() {
     setLoading(true)
     try {
       const res = await fetch(API + "/api/auth/repos?access_token=" + token)
-      console.log("Repos response status:", res.status)
       const data = await res.json()
       console.log("Repos data:", data)
       setRepos(data.repos)
-      setLoading(false)
-      setStep(3)
     } catch(e) {
       console.log("Error loading repos:", e)
-      setLoading(false)
     }
+    setLoading(false)
   }
 
-async function generateDockerfile() {
+  async function generateDockerfile() {
     if (!selectedRepo || !token) return
     setLoading(true)
     setDockerfile(null)
-    const res = await fetch(
-      API + "/api/analyze-github?access_token=" + encodeURIComponent(token) +
-      "&repo_full_name=" + encodeURIComponent(selectedRepo),
-      { method: "POST" }
-    )
-    const data = await res.json()
-    
-    if (data.error) {
-      alert(data.error)
-      setLoading(false)
-      return
+    try {
+      const res = await fetch(
+        API + "/api/analyze-github?access_token=" + encodeURIComponent(token) +
+        "&repo_full_name=" + encodeURIComponent(selectedRepo),
+        { method: "POST" }
+      )
+      const data = await res.json()
+      if (data.error) {
+        alert(data.error)
+      } else {
+        setDockerfile(data)
+      }
+    } catch(e) {
+      console.log("Error generating:", e)
     }
-    
-    setDockerfile(data)
     setLoading(false)
   }
 
@@ -70,23 +64,23 @@ async function generateDockerfile() {
         <button style={styles.btn} onClick={connectGithub}>Connect with GitHub</button>
       </div>
 
-      {step >= 2 && (
-        <div style={styles.step}>
-          <div style={styles.stepLabel}>02 — paste your token</div>
-          <div style={styles.row}>
-            <input
-              style={styles.input}
-              type="password"
-              placeholder="gho_xxxxxxxxxxxx"
-              value={token}
-              onChange={e => setToken(e.target.value)}
-            />
-            <button style={styles.btn} onClick={loadRepos}>Load repos</button>
-          </div>
+      <div style={styles.step}>
+        <div style={styles.stepLabel}>02 — paste your token</div>
+        <div style={styles.row}>
+          <input
+            style={styles.input}
+            type="password"
+            placeholder="gho_xxxxxxxxxxxx"
+            value={token}
+            onChange={e => setToken(e.target.value)}
+          />
+          <button style={styles.btn} onClick={loadRepos} disabled={loading}>
+            {loading ? "Loading..." : "Load repos"}
+          </button>
         </div>
-      )}
+      </div>
 
-      {step >= 3 && (
+      {repos.length > 0 && (
         <div style={styles.step}>
           <div style={styles.stepLabel}>03 — pick a repo</div>
           <div style={styles.repoGrid}>
