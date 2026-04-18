@@ -10,7 +10,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173"
-        "https://dockerfile-generator.vercel.app"
+        "https://docker-file-generator-three.vercel.app"
         ],
 
     allow_credentials=True,
