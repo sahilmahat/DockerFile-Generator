@@ -1,6 +1,8 @@
 import { useState } from "react"
 
-const API = "http://localhost:8000"
+const API = import.meta.env.VITE_API_URL || "http://localhost:8000"
+console.log("API URL:", API)
+
 
 export default function App() {
   const [token, setToken] = useState("")
